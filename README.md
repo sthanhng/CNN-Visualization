@@ -167,6 +167,82 @@ for i in range(n_filters):
 pyplot.show()
 ```
 
+## How to visualize feature maps
+
+The activation maps (feature maps) capture the result of applying the filters to input, such as the input image or another feature map.
+
+The idea of visualizing a feature map for a specific input image would be to understand what features of the input are detected or preserved in the feature maps. The expectation would be that the feature maps close to the input detect small or fine-grained detail, whereas feature maps close to the output of the model capture more general features.
+
+The example below will enumerate all layers in the model and print the output size or feature map size for each convolutional layer as well as the layer index in the model.
+
+```python
+# Summarize feature map size for each conv layer
+from keras.applications.vgg16 import VGG16
+
+# Load the model
+model = VGG16()
+# Summarize feature map shapes
+for i in range(len(model.layers)):
+	layer = model.layers[i]
+	# Check for convolutional layer
+	if 'conv' not in layer.name:
+		continue
+	# Summarize output shape
+	print(i, layer.name, layer.output.shape)
+```
+
+Output:
+
+```
+1 block1_conv1 (?, 224, 224, 64)
+2 block1_conv2 (?, 224, 224, 64)
+4 block2_conv1 (?, 112, 112, 128)
+5 block2_conv2 (?, 112, 112, 128)
+7 block3_conv1 (?, 56, 56, 256)
+8 block3_conv2 (?, 56, 56, 256)
+9 block3_conv3 (?, 56, 56, 256)
+11 block4_conv1 (?, 28, 28, 512)
+12 block4_conv2 (?, 28, 28, 512)
+13 block4_conv3 (?, 28, 28, 512)
+15 block5_conv1 (?, 14, 14, 512)
+16 block5_conv2 (?, 14, 14, 512)
+17 block5_conv3 (?, 14, 14, 512)
+```
+
+We can use this information and design a new model that is subset of the layers in the full VGG16 model. For example, after loading the VGG model, we can define a new model that outputs a feature map from the first convolutional layer (index 1) as follows.
+
+```python
+# Redefine model to output right after the first hidden layer
+model = Model(inputs=model.inputs, outputs=model.layers[1].output)
+```
+
+After defining the model, we need to load the bird image with the size expected by the model, in this case, `224×224`.
+
+```python
+# Load the image with the required shape
+img = load_img('test_img.jpg', target_size=(224, 224))
+
+# The image PIL object needs to be converted to a NumPy array of pixel data
+# and expanded from a 3D array to a 4D array with the dimensions of
+# [samples, rows, cols, channels], where we only have one sample.
+
+# Convert the image to an array
+img = img_to_array(img)
+
+# Expand dimensions so that it represents a single 'sample'
+img = expand_dims(img, axis=0)
+
+# Prepare the image (e.g. scale pixel values for the vgg)
+img = preprocess_input(img)
+```
+
+We are now ready to get the feature map. We can do this easy by calling the `model.predict()` function and passing in the prepared single image.
+
+```python
+# Get feature maps for the first hidden layer
+feature_maps = model.predict(img)
+```
+
 ## Reference
 
 - [How to Visualize Filters and Feature Maps in Convolutional Neural Networks](https://machinelearningmastery.com/how-to-visualize-filters-and-feature-maps-in-convolutional-neural-networks/?fbclid=IwAR3SdRsa8Esc_VyjvjASkwQvh5VO4gr_KSxb7xALWwBWEEck59AIlee8baE)
