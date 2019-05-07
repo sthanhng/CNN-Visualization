@@ -243,6 +243,43 @@ We are now ready to get the feature map. We can do this easy by calling the `mod
 feature_maps = model.predict(img)
 ```
 
+We can plot all 64 two-dimensional images as an 8×8 square of images.
+
+```python
+from matplotlib import pyplot
+
+# Plot all 64 maps in an 8x8 squares
+square = 8
+ix = 1
+for _ in range(square):
+	for _ in range(square):
+		# Specify subplot and turn of axis
+		ax = pyplot.subplot(square, square, ix)
+		ax.set_xticks([])
+		ax.set_yticks([])
+		# Plot filter channel in grayscale
+		pyplot.imshow(feature_maps[0, :, :, ix-1], cmap='gray')
+		ix += 1
+# how the figure
+pyplot.show()
+```
+
+Running the example first summarizes the new, smaller model that takes an image and outputs a feature map.
+
+```
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #
+=================================================================
+input_1 (InputLayer)         (None, 224, 224, 3)       0
+_________________________________________________________________
+block1_conv1 (Conv2D)        (None, 224, 224, 64)      1792
+=================================================================
+Total params: 1,792
+Trainable params: 1,792
+Non-trainable params: 0
+_________________________________________________________________
+```
+
 ## Reference
 
 - [How to Visualize Filters and Feature Maps in Convolutional Neural Networks](https://machinelearningmastery.com/how-to-visualize-filters-and-feature-maps-in-convolutional-neural-networks/?fbclid=IwAR3SdRsa8Esc_VyjvjASkwQvh5VO4gr_KSxb7xALWwBWEEck59AIlee8baE)
